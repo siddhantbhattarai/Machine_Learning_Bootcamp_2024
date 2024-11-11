@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabetes Prediction System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            max-width: 1000px; /* Ensures a larger width */
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-height: 600px; /* Increased height */
+            padding: 20px;
+        }
+        .card-header {
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+            padding: 20px;
+        }
+        .card-body {
+            padding: 30px; /* Increased padding for better spacing */
+        }
+        .btn-custom {
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            width: 100%;
+            padding: 12px 0;
+            transition: all 0.3s ease;
+        }
+        .btn-custom:hover {
+            background-color: #0056b3;
+        }
+        .form-label {
+            font-weight: 500;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .prediction-result {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="card">
+            <div class="card-header">
+                <h2>Diabetes Prediction System</h2>
+            </div>
+            <div class="card-body">
+                <form id="predictionForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Gender</label>
+                            <select name="gender" class="form-select" required>
+                                <option value="" disabled selected>Select Gender</option>
+                                <option value="Female">Female</option>
+                                <option value="Male">Male</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Age (0 - 120 years)</label>
+                            <input type="number" name="age" class="form-control" placeholder="Enter age" required min="0" max="120">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Hypertension</label>
+                            <select name="hypertension" class="form-select" required>
+                                <option value="" disabled selected>Do you have Hypertension?</option>
+                                <option value="0">No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Heart Disease</label>
+                            <select name="heart_disease" class="form-select" required>
+                                <option value="" disabled selected>Do you have Heart Disease?</option>
+                                <option value="0">No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Smoking History</label>
+                            <select name="smoking_history" class="form-select" required>
+                                <option value="" disabled selected>Select Smoking History</option>
+                                <option value="never">Never</option>
+                                <option value="current">Current</option>
+                                <option value="former">Former</option>
+                                <option value="No Info">No Info</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">BMI (10 - 50)</label>
+                            <input type="number" name="bmi" class="form-control" placeholder="Enter BMI" required step="0.01" min="10" max="50">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">HbA1c Level (3.0 - 9.0)</label>
+                            <input type="number" name="HbA1c_level" class="form-control" placeholder="Enter HbA1c Level" required step="0.1" min="3" max="9">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Blood Glucose Level (50 - 300 mg/dL)</label>
+                            <input type="number" name="blood_glucose_level" class="form-control" placeholder="Enter Glucose Level" required min="50" max="300">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-custom">Predict</button>
+                </form>
+
+                <div class="loading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+
+                <div class="prediction-result alert">
+                    <h4 class="result-text text-center"></h4>
+                    <p class="probability-text text-center mb-0"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#predictionForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                $('.prediction-result').hide();
+                $('.loading').show();
+
+                $.ajax({
+                    url: '/predict',
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        $('.loading').hide();
+                        $('.prediction-result').show();
+
+                        const resultClass = response.prediction === 1 ? 'alert-warning' : 'alert-success';
+                        const resultText = response.prediction === 1 ? 
+                            'Potential Risk of Diabetes Detected' : 
+                            'No Immediate Risk of Diabetes Detected';
+
+                        $('.prediction-result')
+                            .removeClass('alert-success alert-warning alert-danger')
+                            .addClass(resultClass);
+
+                        $('.result-text').text(resultText);
+                        $('.probability-text').text(`Probability: ${response.probability}%`);
+                    },
+                    error: function() {
+                        $('.loading').hide();
+                        $('.prediction-result')
+                            .removeClass('alert-success alert-warning')
+                            .addClass('alert-danger')
+                            .show();
+                        $('.result-text').text('Server Error');
+                        $('.probability-text').text('Please try again later');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
