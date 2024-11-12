@@ -43,6 +43,7 @@ Diabetes-Prediction-System/
 - Scikit-learn
 - Pandas
 - Numpy
+- joblib
 
 ### Setup Instructions
 
