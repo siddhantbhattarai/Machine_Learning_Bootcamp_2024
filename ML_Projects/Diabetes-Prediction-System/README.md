@@ -44,7 +44,7 @@ Diabetes-Prediction-System/
 - Pandas
 - Numpy
 - joblib
-
+- xgboost
 ### Setup Instructions
 
 1. **Clone the repository**:
