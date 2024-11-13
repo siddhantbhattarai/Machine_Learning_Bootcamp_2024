@@ -43,7 +43,8 @@ Diabetes-Prediction-System/
 - Scikit-learn
 - Pandas
 - Numpy
-
+- joblib
+- xgboost
 ### Setup Instructions
 
 1. **Clone the repository**:
