@@ -96,7 +96,7 @@ Refer to the image in the `test-cases` directory (`test-cases/test-cases.png`) f
 ## Screenshots
 
 ### Home Page
-Include a screenshot of the homepage here (if available).
+![test-cases](https://github.com/user-attachments/assets/afed3022-1bac-41f6-ba98-48f8e1e2265d)
 
 ---
 
