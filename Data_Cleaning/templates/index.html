@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liver Cancer Stage Prediction</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
+        }
+        .form-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .form-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+        .result-box {
+            display: none;
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            background-color: #e7f3ff;
+            color: #004085;
+        }
+        .stage-info {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #ffffff;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+        }
+        .error-message {
+            display: none;
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h2 class="form-header">Liver Cancer Stage Prediction</h2>
+            <form id="predictionForm">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="age" class="form-label">Age (0 - 120 years)</label>
+                        <input type="number" id="age" class="form-control" placeholder="Enter age (0-120)" min="0" max="120" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="gender" class="form-label">Gender</label>
+                        <select id="gender" class="form-select" required>
+                            <option value="">Select Gender</option>
+                            <option value="0">Male</option>
+                            <option value="1">Female</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="alt" class="form-label">ALT (U/L) (10 - 150)</label>
+                        <input type="number" id="alt" class="form-control" placeholder="Enter ALT (10-150)" min="10" max="150" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="ast" class="form-label">AST (U/L) (10 - 150)</label>
+                        <input type="number" id="ast" class="form-control" placeholder="Enter AST (10-150)" min="10" max="150" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="total_bilirubin" class="form-label">Total Bilirubin (mg/dL) (0.1 - 3.0)</label>
+                        <input type="number" step="0.01" id="total_bilirubin" class="form-control" placeholder="Enter Total Bilirubin (0.1-3.0)" min="0.1" max="3.0" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="direct_bilirubin" class="form-label">Direct Bilirubin (mg/dL) (0.1 - 1.0)</label>
+                        <input type="number" step="0.01" id="direct_bilirubin" class="form-control" placeholder="Enter Direct Bilirubin (0.1-1.0)" min="0.1" max="1.0" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="albumin" class="form-label">Albumin (g/dL) (2.5 - 5.5)</label>
+                        <input type="number" step="0.01" id="albumin" class="form-control" placeholder="Enter Albumin (2.5-5.5)" min="2.5" max="5.5" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="alcohol" class="form-label">Alcohol Consumption</label>
+                        <select id="alcohol" class="form-select" required>
+                            <option value="">Select</option>
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="hepatitis" class="form-label">Hepatitis B Infection</label>
+                        <select id="hepatitis" class="form-select" required>
+                            <option value="">Select</option>
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="cirrhosis" class="form-label">Cirrhosis History</label>
+                        <select id="cirrhosis" class="form-select" required>
+                            <option value="">Select</option>
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="d-grid gap-2 mt-3">
+                    <button type="submit" class="btn btn-primary">Predict</button>
+                </div>
+            </form>
+            <div id="resultBox" class="result-box">
+                <h4>Prediction Result</h4>
+                <p id="predictionResult" class="mb-2"></p>
+                <div id="stageInfo" class="stage-info"></div>
+            </div>
+            <div id="errorMessage" class="error-message"></div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                age: document.getElementById('age').value,
+                gender: document.getElementById('gender').value,
+                alt: document.getElementById('alt').value,
+                ast: document.getElementById('ast').value,
+                total_bilirubin: document.getElementById('total_bilirubin').value,
+                direct_bilirubin: document.getElementById('direct_bilirubin').value,
+                albumin: document.getElementById('albumin').value,
+                alcohol: document.getElementById('alcohol').value,
+                hepatitis: document.getElementById('hepatitis').value,
+                cirrhosis: document.getElementById('cirrhosis').value,
+            };
+
+            try {
+                // Send data to backend for prediction
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData),
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('errorMessage').style.display = 'none';
+                    document.getElementById('predictionResult').innerText = `Predicted Cancer Stage: ${result.stage}`;
+                    document.getElementById('stageInfo').innerText = result.info;
+                    document.getElementById('resultBox').style.display = 'block';
+                } else {
+                    document.getElementById('resultBox').style.display = 'none';
+                    document.getElementById('errorMessage').innerText = result.error || 'An error occurred during prediction';
+                    document.getElementById('errorMessage').style.display = 'block';
+                }
+            } catch (error) {
+                document.getElementById('resultBox').style.display = 'none';
+                document.getElementById('errorMessage').innerText = 'An error occurred while connecting to the server';
+                document.getElementById('errorMessage').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
